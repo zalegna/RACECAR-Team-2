@@ -1,4 +1,5 @@
-#Version: 7/14/25 end of day
+#Version 7/15/25
+#Time ~ 22 seconds
 
 ########################################################################################
 # Imports
@@ -41,6 +42,7 @@ speed = 0.0  # The current speed of the car
 angle = 0.0  # The current angle of the car's wheels
 contour_center = None  # The (pixel row, pixel column) of contour
 contour_area = 0  # The area of contour
+prev_errors = []
 
 
 ########################################################################################
@@ -53,7 +55,7 @@ global minArea
 minArea=30
 def getLineColor(color):
     image=rc.camera.get_color_image()
-    image=rc_utils.crop(image, (300, 0), (rc.camera.get_height(), rc.camera.get_width()))
+    image=rc_utils.crop(image, (360, 0), (rc.camera.get_height(), rc.camera.get_width()))
 
     hsvLower=color[0]
     hsvUpper=color[1]
@@ -76,16 +78,29 @@ def getLineColor(color):
 def start():
     global speed
     global angle
+    global prev_error
 
     # Initialize variables
     speed = 0
     angle = 0
 
+    prev_error=0
     # Set initial driving speed and angle
     rc.drive.set_speed_angle(speed, angle)
 
     # Set update_slow to refresh every half second
     rc.set_update_slow_time(0.5)
+
+    # Print start message
+    print(
+        ">> Lab 2A - Color Image Line Following\n"
+        "\n"
+        "Controls:\n"
+        "   Right trigger = accelerate forward\n"
+        "   Left trigger = accelerate backward\n"
+        "   A button = print current speed and angle\n"
+        "   B button = print contour center and area"
+    )
 
 # [FUNCTION] After start() is run, this function is run once every frame (ideally at
 # 60 frames per second or slower depending on processing speed) until the back button
@@ -100,6 +115,7 @@ def update():
     global contour_center
     global contour_area
     global error
+    global prev_error
 
     # Search for contours in the current color image
     global lineColor
@@ -128,14 +144,22 @@ def update():
         presentVal=contour_center[1]
 
         #Calculate angle
-        kp=-0.0045
+        kp = -0.004
+        kd = -0.0008
+        
         error=setpoint-presentVal
-        unclamped=kp*error
+        change = (error - prev_error) / rc.get_delta_time()
+
+        #setting angle
+        unclamped= kp*error + kd*change
+        # print(kp*error, "||", kd*change)
 
         #Clamp the angle
         angle=rc_utils.clamp(unclamped, -1, 1)
-    else:
-        angle=0
+
+        prev_error=error
+    # else:
+    #     angle=0
 
 
 
@@ -144,9 +168,17 @@ def update():
     # lt = rc.controller.get_trigger(rc.controller.Trigger.LEFT)
     # speed = rt - lt
     rc.drive.set_max_speed(1)
-    speed=0.8
 
+    if abs(error) > 275:
+       speed = 0.8
+    else:
+        speed = 1
+
+    
+    
+    # speed=1
     rc.drive.set_speed_angle(speed, angle)
+
 
     # Print the current speed and angle when the A button is held down
     if rc.controller.is_down(rc.controller.Button.A):
@@ -167,20 +199,21 @@ def update_slow():
     After start() is run, this function is run at a constant rate that is slower
     than update().  By default, update_slow() is run once per second
     """
-    # Print a line of ascii text denoting the contour area and x-position
-    if rc.camera.get_color_image() is None:
-        # If no image is found, print all X's and don't display an image
-        print("X" * 10 + " (No image) " + "X" * 10)
-    else:
-        # If an image is found but no contour is found, print all dashes
-        if contour_center is None:
-            print("-" * 32 + " : area = " + str(contour_area))
+    print(speed)
+    # # Print a line of ascii text denoting the contour area and x-position
+    # if rc.camera.get_color_image() is None:
+    #     # If no image is found, print all X's and don't display an image
+    #     print("X" * 10 + " (No image) " + "X" * 10)
+    # else:
+    #     # If an image is found but no contour is found, print all dashes
+    #     if contour_center is None:
+    #         print("-" * 32 + " : area = " + str(contour_area))
 
-        # Otherwise, print a line of dashes with a | indicating the contour x-position
-        else:
-            s = ["-"] * 32
-            s[int(contour_center[1] / 20)] = "|"
-            print("".join(s) + " : area = " + str(contour_area))
+    #     # Otherwise, print a line of dashes with a | indicating the contour x-position
+    #     else:
+    #         s = ["-"] * 32
+    #         s[int(contour_center[1] / 20)] = "|"
+    #         print("".join(s) + " : area = " + str(contour_area))
 
 
 ########################################################################################
