@@ -1,27 +1,5 @@
-"""
-MIT BWSI Autonomous RACECAR
-MIT License
-racecar-neo-prereq-labs
-
-File Name: lab_f.py
-
-Title: Lab F - Line Follower
-
-Author: [PLACEHOLDER] << [Write your name or team name here]
-
-Purpose: Write a script to enable fully autonomous behavior from the RACECAR. The
-RACECAR should automatically identify the color of a line it sees, then drive on the
-center of the line throughout the obstacle course. The RACECAR should also identify
-color changes, following colors with higher priority than others. Complete the lines 
-of code under the #TODO indicators to complete the lab.
-
-Expected Outcome: When the user runs the script, they are able to control the RACECAR
-using the following keys:
-- When the right trigger is pressed, the RACECAR moves forward at full speed
-- When the left trigger is pressed, the RACECAR, moves backwards at full speed
-- The angle of the RACECAR should only be controlled by the center of the line contour
-- The RACECAR sees the color RED as the highest priority, then GREEN, then BLUE
-"""
+#Version 7/15/25
+#Time ~ 22 seconds
 
 ########################################################################################
 # Imports
