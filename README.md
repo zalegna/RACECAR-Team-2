@@ -1,4 +1,4 @@
-BWSI RACECAR Course 2025
+BWSI RACECAR Course 2025 -- Team 2
 
 Team Members: Annabeth, Angela, Dinesh, Roshik
 
