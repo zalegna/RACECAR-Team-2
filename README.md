@@ -1,14 +1,6 @@
 BWSI RACECAR Course 2025
 
-Team Members:
-
-Annabeth
-
-Angela
-
-Dinesh
-
-Roshik
+Team Members: Annabeth, Angela, Dinesh, Roshik
 
 
 All code versions for each challenge will be found under their respective folders.
