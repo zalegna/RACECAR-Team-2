@@ -2,6 +2,8 @@
 #Base code: Roshik Patibandla
 
 #Cones completed in trial: 3
+#Max cones completed: 6
+#Reliability: mid-high
 
 ########################################################################################
 # Imports
