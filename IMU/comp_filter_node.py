@@ -7,7 +7,7 @@ File Name: lab_2a.py
 
 Title: BYOA (Build Your Own AHRS)
 
-Author: annabeth kinda
+Author: [PLACEHOLDER] << [Write your name or team name here]
 
 Purpose: The goal of this lab is to build and deploy a ROS node that can ingest
 IMU data and return accurate attitude estimates (roll, pitch, yaw) that can then
@@ -19,6 +19,7 @@ Expected Outcome: Subscribe to the /imu and /mag topics, and publish to the /att
 topic with accurate attitude estimations.
 """
 
+# btw, yaw is cooked. dont use it cause our mag sucks. its a hardware issue but im putting the disclaimer here
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, MagneticField
@@ -60,21 +61,23 @@ class CompFilterNode(Node):
         # https://ahrs.readthedocs.io/en/latest/filters/complementary.html
     
         # TODO: Derive tilt angles from accelerometer
-        accel_roll = np.arctan2(accel.y, np.sqrt(accel.x**2 + accel.z**2)) # theta_x
-        accel_pitch = np.arctan2(-accel.x, np.sqrt(accel.y**2 + accel.z**2)) # theta_y - seems correct
+        accel_roll = math.atan2(accel.y, math.sqrt(accel.x**2 + accel.z**2)) # theta_x
+        accel_pitch = math.atan2(-accel.x, math.sqrt(accel.y**2 + accel.z**2)) # theta_y - seems correct
 
         # TODO: Integrate gyroscope to get attitude angles
-        gyro_roll = (self.roll + gyro.x*dt) #% 2*np.pi # theta_xt
-        gyro_pitch = (self.pitch + gyro.y*dt) #% 2*np.pi # theta_yt
-        gyro_yaw = (self.yaw + gyro.z*dt) #% 2*np.pi # theta_zt
+        gyro_roll = (self.roll + gyro.x*dt) #% 2*math.pi # theta_xt
+        gyro_pitch = (self.pitch + gyro.y*dt) #% 2*math.pi # theta_yt
+        gyro_yaw = (self.yaw + gyro.z*dt) #% 2*math.pi # theta_zt
 
         # TODO: Compute yaw angle from magnetometer
         if self.mag:
             mx, my, mz = self.mag
             print(f"Mag norm (~50 uT): {math.sqrt(mx**2 + my**2 + mz**2) * 1e6}") # used for checking magnetic disturbances/offsets
-            by = -mz*np.sin(self.pitch) + my*np.cos(self.pitch)
-            bx = mz*np.sin(self.roll)*np.cos(self.pitch) + my*np.sin(self.roll)*np.sin(self.pitch) + mx*np.cos(self.pitch)
-            mag_accel_yaw = np.arctan2(-by, bx)
+            # by = -mz*math.sin(self.pitch) + my*math.cos(self.pitch)
+            # bx = mz*math.sin(self.roll)*math.cos(self.pitch) + my*math.sin(self.roll)*math.sin(self.pitch) + mx*math.cos(self.pitch)
+            by = mx*math.cos(accel_pitch) + mz*math.sin(accel_pitch)
+            bx = mx*math.sin(accel_roll)*math.sin(accel_pitch) + my*math.cos(accel_pitch) - mz*math.sin(accel_roll)*math.cos(accel_pitch) 
+            mag_accel_yaw = math.atan2(by, bx) + math.pi
         else:
             mag_accel_yaw = self.yaw
         
