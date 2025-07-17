@@ -1,7 +1,7 @@
 #Version 1 
 #Base code: Roshik Patibandla
 
-#Cones passed: 3
+#Max cones passed: 3
 #Reliability: low
 
 import sys 
