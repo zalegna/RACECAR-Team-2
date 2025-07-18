@@ -1,4 +1,8 @@
-#Version 1 7/14/25 11:43 AM
+#Team 2 Line Follower Challenge Code
+#Base code by Roshik Patibandla
+
+#Version 1 7/14/25
+#Time ~ not tested 
 
 ########################################################################################
 # Imports
