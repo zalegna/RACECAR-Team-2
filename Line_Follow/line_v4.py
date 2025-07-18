@@ -1,6 +1,10 @@
+#Team 2 Line Follower Challenge Code
+#Base code by Angela Zhao
+
 #Version 4 7/15/25
-#Currently diverging, tomorrow must tune gains for both straights and curves
-#Also need to test dynamic switching
+#Time ~ not tested 
+
+#Features dynamic speed - inspiration for final code
 
 ########################################################################################
 # Imports
