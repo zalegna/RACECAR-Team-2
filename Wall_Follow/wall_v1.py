@@ -1,4 +1,4 @@
-#Team 2 Line Follower Challenge Code
+#Team 2 Wall Follower Challenge Code
 #Base code by Roshik Patibandla
 
 #Version 1 7/14/25
