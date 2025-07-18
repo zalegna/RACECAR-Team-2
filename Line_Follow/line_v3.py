@@ -1,5 +1,8 @@
-#This version did not work very well... we went back to the 22 second one
+#Team 2 Line Follower Challenge Code
+#Base code by Angela Zhao
 
+#Version 3 7/15/25
+#Time ~ not tested (worse than V2)
 ########################################################################################
 # Imports
 ########################################################################################
