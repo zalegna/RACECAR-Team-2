@@ -100,7 +100,7 @@ class PhysicsReal(Physics):
     
     def __attitude_callback(self, data):
         new_attitude = np.array(
-            [data.attitude.x, data.attitude.y, data.attitude.z] #COPY PASTE ENTIRE FILE into jupyter, this was changed to xyz
+            [data.x, data.y, data.z] #COPY PASTE ENTIRE FILE into jupyter, this was changed to xyz
         )
 
         self.__attitude_buffer.append(new_attitude)
