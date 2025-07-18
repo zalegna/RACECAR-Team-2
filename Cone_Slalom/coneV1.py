@@ -1,6 +1,7 @@
-#Version 1 7/16/25
-#Base code: Roshik Patibandla
+#Team 2 Cone Slalom Challenge Code
+#Base code by Roshik Patibandla
 
+#Version 1 7/16/25
 #Max cones passed: 3
 #Reliability: low
 
