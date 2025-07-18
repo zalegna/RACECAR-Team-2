@@ -1,6 +1,7 @@
-#version 4 7/18/25
+#Version 4 (final) 7/18/25
 #Base code: Roshik with Angela's cone approach
 
+#Cones completed in trial: 7
 #Max cones: 7
 #Reliability: high 
 
