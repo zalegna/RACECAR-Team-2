@@ -1,9 +1,9 @@
-#Version 4 (final) 7/18/25
-#Base code: Roshik with Angela's cone approach
+#Team 2 Cone Slalom Challenge Code
+#Base code by Roshik Patibandla
 
+#Version 4 (final) 7/17/25
 #Cones completed in trial: max
 #Max cones: max
-#Reliability: high 
 
 #NOTE: Use tape to mark out optimal starting position (facing AWAY from the first cone)
 
