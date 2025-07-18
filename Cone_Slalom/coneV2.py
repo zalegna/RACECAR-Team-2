@@ -1,8 +1,10 @@
-#Version 2 7/17/25
-#Base code: Angela Zhao
+#Team 2 Cone Slalom Challenge Code
+#Base code by Roshik Patibandla
 
+#Version 2 7/17/25
 #Max cones passed: 5
-#Reliability: med
+#Reliability: low-med
+
 
 ########################################################################################
 # Imports
