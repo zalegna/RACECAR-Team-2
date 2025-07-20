@@ -33,15 +33,42 @@ class VelocityNode(Node):
         # Set up subscriber and publisher nodes
         self.subscription_imu = self.create_subscription(Imu, '/imu', self.imu_callback, 10)
         self.publisher_velocity = self.create_publisher(Vector3, '/velocity', 10) # output as [roll, pitch, yaw] angles
+        self.subscription_mag = self.create_subscription(MagneticField, '/mag', self.mag_callback, 10)
 
         self.prev_time = self.get_clock().now().nanoseconds / 10**9 # initialize time checkpoint
 
-        self.alpha = .95 # TODO: Determine an alpha value that works with the complementary filter
+        self.alpha = .95
+
+        # intialize gyro stuff
+        self.roll = 0.0
+        self.pitch = 0.0
+        self.yaw = 0.0
+
+        self.prev_accel_x = 0.0
+        self.prev_accel_y = 0.0
+        self.prev_accel_z = 0.0
+
+        self.mag = None
 
         # set up velocity params
         self.x_velocity = 0.0
         self.y_velocity = 0.0
         self.z_velocity = 0.0
+
+        # initialize kalman stuff
+        self.xf = self.create_kalman_filter()
+        self.yf = self.create_kalman_filter()
+        self.zf = self.create_kalman_filter()
+
+    def create_kalman_filter(self, dt=0.1, var=0.13):
+        kf = KalmanFilter(dim_x=2, dim_z=1)
+        kf.x = np.array([0., 0.])
+        kf.F = np.array([[1., dt], [0., 1.]])
+        kf.H = np.array([[0., 1.]])
+        kf.P = np.eye(2) * 1000.
+        kf.R = 1
+        kf.Q = Q_discrete_white_noise(dim=2, dt=dt, var=var)
+        return kf
 
     # [FUNCTION] Called when new IMU data is received, attidude calc completed here as well
     def imu_callback(self, data):
@@ -56,16 +83,6 @@ class VelocityNode(Node):
         now = self.get_clock().now().nanoseconds / 10**9 # Current ROS time
         dt = now - self.prev_time # Time delta
         self.prev_time = now # refresh checkpoint
-
-        self.new_x = self.prev_x
-
-        # Print results for sanity checking
-        # print(f"====== Results ======")
-        # if dt != 0:
-        #     print(f"Speed || Freq = {round(1/dt,0)} || dt (ms) = {round(dt*1e3, 2)}")
-        # else:
-        #     print(f"dt = 0!!!!")
-        # print("\n")
     
         # Derive tilt angles from accelerometer
         accel_roll = np.arctan2(accel.y, np.sqrt(accel.x**2 + accel.z**2)) # theta_x
@@ -101,21 +118,53 @@ class VelocityNode(Node):
             g * np.sin(self.roll) * np.cos(self.pitch),
             g * np.cos(self.roll) * np.cos(self.pitch)
         ])
-        no_gravity = accel - gravity
+
+        accel_array = np.array([accel.x, accel.y, accel.z]) # acceleration from vector3 to  np array to do operations
+        no_gravity = accel_array - gravity
 
         # calc new xyz velocity by integrating (trapezoid sum not rectangles i forget the name)
         # the accel_ is there because these are the points calculated using the accelerometer
         # however, these are velocity values
-        accel_velocity_x = self.x_velocity + 0.5 * (no_gravity.x + self.prev_accel_x) * dt
-        accel_velocity_y = self.y_velocity + 0.5 * (no_gravity.y + self.prev_accel_y) * dt
-        accel_velocity_z = self.z_velocity + 0.5 * (no_gravity.z + self.prev_accel_z) * dt
+        accel_velocity_x = self.x_velocity + 0.5 * (no_gravity[0] + self.prev_accel_x) * dt
+        accel_velocity_y = self.y_velocity + 0.5 * (no_gravity[1] + self.prev_accel_y) * dt
+        accel_velocity_z = self.z_velocity + 0.5 * (no_gravity[2] + self.prev_accel_z) * dt
 
+        # i give up KALMAN TIME
+        xz = accel_velocity_x
+        self.xf.predict()
+        self.xf.update([[xz]])
+
+        yz = accel_velocity_y
+        self.yf.predict()
+        self.yf.update([[yz]])
+
+        zz = accel_velocity_z
+        self.zf.predict()
+        self.zf.update([[zz]])
+
+        # ADD ANOTHER COMP FILTER HERE? SOMEHOW??
+
+        # make current values into the previous values for the next iteration :D
+        self.prev_accel_x = no_gravity[0] # pure linear acceleration
+        self.prev_accel_y = no_gravity[1]
+        self.prev_accel_z = no_gravity[2]
         
-    
+        # publish it!!
+        self.x_velocity = self.xf.x[1] # velocity after kalmans
+        self.y_velocity = self.yf.x[1]
+        self.z_velocity = self.zf.x[1]
+
+        velocity = Vector3()
+        velocity.x = self.x_velocity
+        velocity.y = self.y_velocity
+        velocity.z = self.z_velocity
+        self.publisher_velocity.publish(velocity)
+
     # [FUNCTION] Called when magnetometer topic receives an update
     def mag_callback(self, data):
-        # TODO: Assign self.mag to the magnetometer data points
+        # Assign self.mag to the magnetometer data points
         self.mag = (data.magnetic_field.x, data.magnetic_field.y, data.magnetic_field.z,)
+        
 
 def main():
     rclpy.init(args=None)
