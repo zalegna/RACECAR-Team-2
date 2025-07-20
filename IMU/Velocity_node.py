@@ -114,9 +114,9 @@ class VelocityNode(Node):
         # calculate gravity vector based on attitude, then remove it from linear acceleration
         g = 9.81
         gravity = np.array([ 
-            -g * np.sin(self.roll),
-            g * np.sin(self.roll) * np.cos(self.pitch),
-            g * np.cos(self.roll) * np.cos(self.pitch)
+            g * np.sin(self.pitch),                                    # X
+            -g * np.sin(self.roll) * np.cos(self.pitch),               # Y
+            -g * np.cos(self.roll) * np.cos(self.pitch)                # Z
         ])
 
         accel_array = np.array([accel.x, accel.y, accel.z]) # acceleration from vector3 to  np array to do operations
