@@ -3,11 +3,11 @@ MIT BWSI Autonomous RACECAR
 MIT License
 racecar-neo-summer-labs
 
-File Name: lab_2a.py
+File Name: comp_filter_node.py
 
 Title: BYOA (Build Your Own AHRS)
 
-Author: [PLACEHOLDER] << [Write your name or team name here]
+Author: team 2 annabeth
 
 Purpose: The goal of this lab is to build and deploy a ROS node that can ingest
 IMU data and return accurate attitude estimates (roll, pitch, yaw) that can then
@@ -17,6 +17,8 @@ code has been provided for the implementation of a Complementary Filter.
 
 Expected Outcome: Subscribe to the /imu and /mag topics, and publish to the /attitude
 topic with accurate attitude estimations.
+
+btw, yaw is cooked. dont use it cause our mag sucks. its a hardware issue but im putting the disclaimer here
 """
 
 import rclpy
@@ -36,7 +38,7 @@ class CompFilterNode(Node):
         self.subscription_mag = self.create_subscription(MagneticField, '/mag', self.mag_callback, 10)
         self.publisher_attitude = self.create_publisher(Vector3, '/attitude', 10) # output as [roll, pitch, yaw] angles
 
-        self.prev_time = self.get_clock().now() # initialize time checkpoint
+        self.prev_time = self.get_clock().now().nanoseconds / 10**9 # initialize time checkpoint
         self.alpha = .95 # TODO: Determine an alpha value that works with the complementary filter
 
         # set up attitude params
@@ -52,29 +54,31 @@ class CompFilterNode(Node):
         gyro = data.angular_velocity
 
         # TODO: Calculate time delta
-        now = rclpy.clock.Clock().now() # Current ROS time
-        dt = (now - self.prev_time).nanoseconds * 1e-9 # Time delta
+        now = self.get_clock().now().nanoseconds / 10**9 # Current ROS time
+        dt = now - self.prev_time # Time delta
         self.prev_time = now # refresh checkpoint
 
         # Attitude angle derivations, see full formula here:
         # https://ahrs.readthedocs.io/en/latest/filters/complementary.html
     
         # TODO: Derive tilt angles from accelerometer
-        accel_roll = np.arctan2(accel.y, np.sqrt(accel.x**2 + accel.z**2)) # theta_x
-        accel_pitch = np.arctan2(-accel.x, np.sqrt(accel.y**2 + accel.z**2)) # theta_y - seems correct
+        accel_roll = math.atan2(accel.y, math.sqrt(accel.x**2 + accel.z**2)) # theta_x
+        accel_pitch = math.atan2(-accel.x, math.sqrt(accel.y**2 + accel.z**2)) # theta_y - seems correct
 
         # TODO: Integrate gyroscope to get attitude angles
-        gyro_roll = self.roll + gyro.x*dt # theta_xt
-        gyro_pitch = self.pitch + gyro.y*dt # theta_yt
-        gyro_yaw = self.yaw + gyro.z*dt # theta_zt
+        gyro_roll = (self.roll + gyro.x*dt) #% 2*math.pi # theta_xt
+        gyro_pitch = (self.pitch + gyro.y*dt) #% 2*math.pi # theta_yt
+        gyro_yaw = (self.yaw + gyro.z*dt) #% 2*math.pi # theta_zt
 
         # TODO: Compute yaw angle from magnetometer
         if self.mag:
             mx, my, mz = self.mag
             print(f"Mag norm (~50 uT): {math.sqrt(mx**2 + my**2 + mz**2) * 1e6}") # used for checking magnetic disturbances/offsets
-            by = -mz*np.sin(self.pitch) + my*np.cos(self.pitch)
-            bx = mz*np.sin(self.roll)*np.cos(self.pitch) + my*np.sin(self.roll)*np.sin(self.pitch) + mx*np.cos(self.pitch)
-            mag_accel_yaw = np.arctan2(-by, bx)
+            # by = -mz*math.sin(self.pitch) + my*math.cos(self.pitch)
+            # bx = mz*math.sin(self.roll)*math.cos(self.pitch) + my*math.sin(self.roll)*math.sin(self.pitch) + mx*math.cos(self.pitch)
+            by = mx*math.cos(accel_pitch) + mz*math.sin(accel_pitch)
+            bx = mx*math.sin(accel_roll)*math.sin(accel_pitch) + my*math.cos(accel_pitch) - mz*math.sin(accel_roll)*math.cos(accel_pitch) 
+            mag_accel_yaw = math.atan2(by, bx) + math.pi
         else:
             mag_accel_yaw = self.yaw
         

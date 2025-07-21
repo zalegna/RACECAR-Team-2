@@ -1,8 +1,5 @@
-#Team 2 Wall Follower Challenge Code
-#Base code by Roshik Patibandla
-
-#Version 1 7/14/25
-#Time ~ not tested 
+#Version 7/18/25 10:58 AM
+#Time ~ 17.6 seconds 
 
 ########################################################################################
 # Imports
@@ -10,12 +7,12 @@
 
 from random import seed
 import sys
-import cv2 as cv #type: ignore
-import numpy as np #type: ignore
+import cv2 as cv
+import numpy as np
 
-sys.path.insert(0, "../library")
-import racecar_core #type: ignore
-import racecar_utils as rc_utils #type: ignore
+sys.path.insert(1, "../../library")
+import racecar_core
+import racecar_utils as rc_utils
 from enum import IntEnum
 
 ########################################################################################
@@ -24,10 +21,7 @@ from enum import IntEnum
 
 rc = racecar_core.create_racecar()
 
-
-
-# Add any global variables here
-
+# Global variables here
 LEFT_WINDOW = (-45, -15)
 RIGHT_WINDOW = (15, 45)
 FRONT_WINDOW = (-1,1)
@@ -78,9 +72,12 @@ def update():
     global front_distance
 
     scan = rc.lidar.get_samples()
-    left_angle, left_distance = rc_utils.get_lidar_closest_point(scan, LEFT_WINDOW)
-    right_angle, right_distance = rc_utils.get_lidar_closest_point(scan, RIGHT_WINDOW)
+    # left_angle, left_distance = rc_utils.get_lidar_closest_point(scan, LEFT_WINDOW)
+    # right_angle, right_distance = rc_utils.get_lidar_closest_point(scan, RIGHT_WINDOW)
     front_angle, front_distance = rc_utils.get_lidar_closest_point(scan, FRONT_WINDOW)
+
+    right_distance = rc_utils.get_lidar_average_distance(scan, 45, 20)
+    left_distance = rc_utils.get_lidar_average_distance(scan, 315, 20)
 
     print(front_distance)
     
@@ -131,8 +128,8 @@ def turn():
     global speed
     global prev_error
 
-    KP = .00475
-    kd = 0.1
+    KP = .0042
+    kd = 0.3
 
     scan = rc.lidar.get_samples()
     
@@ -153,7 +150,7 @@ def turn():
     if abs(error) < 10:
         cur_state == State.move
 
-    speed = rc_utils.clamp(1, 0.4, 1)
+    speed = rc_utils.clamp(1 - angle, 0.8, 1)
 
     prev_error = error
 
@@ -165,7 +162,13 @@ def stop():
     speed = 0
     angle = 0
 
-
+def update_slow():
+    attitude = rc.physics.get_attitude()
+    
+    rc.display.show_text(f"PITCH: {attitude[1]}")
+    print("=== IMU DATA!!! ===")
+    print(f"ATTITUDE: {attitude}")
+    print(f"VELOCITY: {0}")
 
 ########################################################################################
 # DO NOT MODIFY: Register start and update and begin execution

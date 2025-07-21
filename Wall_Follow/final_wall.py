@@ -1,6 +1,8 @@
-#Version 7/15/25 3:37 PM
-#Base code: Roshik Patibandla
-#Time ~ 17.6 seconds 
+#Team 2 Wall Follower Challenge Code
+#Base code by Roshik Patibandla
+
+#Version 2 (final) 7/15/25
+#Time ~ 17.6
 
 ########################################################################################
 # Imports

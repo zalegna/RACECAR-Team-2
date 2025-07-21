@@ -1,5 +1,8 @@
+#Team 2 Line Follower Challenge Code
+#Base code by Angela Zhao
+
 #Version 2 7/15/25
-#Time ~ 22 seconds
+#Time ~ 22 sec
 
 ########################################################################################
 # Imports

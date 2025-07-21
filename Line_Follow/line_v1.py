@@ -1,4 +1,8 @@
+#Team 2 Line Follower Challenge Code
+#Base code by Angela Zhao
+
 #Version 1 7/14/25
+#Time ~ not tested
 
 ########################################################################################
 # Imports
