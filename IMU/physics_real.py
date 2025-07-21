@@ -35,6 +35,8 @@ class PhysicsReal(Physics):
     __IMU_TOPIC = "/imu"
     __MAG_TOPIC = "/mag"
     __ATTITUDE_TOPIC = "/attitude"
+    __VELOCITY_TOPIC = "/velocity"
+    __POSE_TOPIC = "/pose"
 
     # Limit on buffer size to prevent memory overflow
     __BUFFER_CAP = 60
@@ -63,6 +65,14 @@ class PhysicsReal(Physics):
             Vector3, self.__ATTITUDE_TOPIC, self.__attitude_callback, qos_profile
         )
 
+        self.__attitude_sub = self.node.create_subscription(
+            Vector3, self.__VELOCITY_TOPIC, self.__velocity_callback, qos_profile
+        )
+
+        self.__pose_sub = self.node.create_subscription(
+            Vector3, self.__POSE_TOPIC, self.__pose_callback, qos_profile
+        )
+
         self.__acceleration = np.array([0, 0, 0])
         self.__acceleration_buffer = deque()
         self.__angular_velocity = np.array([0, 0, 0])
@@ -71,6 +81,10 @@ class PhysicsReal(Physics):
         self.__magnetic_field_buffer = deque()
         self.__attitude = np.array([0, 0, 0])
         self.__attitude_buffer = deque()
+        self.__velocity = np.array([0, 0, 0])
+        self.__velocity_buffer = deque()
+        self.__pose = np.array([0, 0, 0])
+        self.__pose_buffer = deque()
 
     def __imu_callback(self, data):
         new_acceleration = np.array(
@@ -100,13 +114,31 @@ class PhysicsReal(Physics):
     
     def __attitude_callback(self, data):
         new_attitude = np.array(
-            [data.x, data.y, data.z] #COPY PASTE ENTIRE FILE into jupyter, this was changed to xyz
+            [data.x, data.y, data.z]
         )
 
         self.__attitude_buffer.append(new_attitude)
         if len(self.__attitude_buffer) > self.__BUFFER_CAP:
-            self.__angular_velocity_buffer.popleft()
-    
+            self.__attitude_buffer.popleft()
+
+    def __velocity_callback(self, data):
+        new_velocity = np.array(
+            [data.x, data.y, data.z]
+        )
+
+        self.__velocity_buffer.append(new_velocity)
+        if len(self.__velocity_buffer) > self.__BUFFER_CAP:
+            self.__velocity_buffer.popleft()
+
+    def __pose_callback(self, data):
+        new_pose = np.array(
+            [data.x, data.y, data.z]
+        )
+
+        self.__pose_buffer.append(new_velocity)
+        if len(self.__pose_buffer) > self.__BUFFER_CAP:
+            self.__pose_buffer.popleft()    
+
     def __update(self):
         if len(self.__acceleration_buffer) > 0:
             self.__acceleration = np.mean(self.__acceleration_buffer, axis=0)
@@ -124,6 +156,14 @@ class PhysicsReal(Physics):
             self.__attitude = np.mean(self.__attitude_buffer, axis=0)
             self.__attitude_buffer.clear()
         
+        if len(self.__velocity_buffer) > 0:
+            self.__velocity = np.mean(self.__velocity_buffer, axis=0)
+            self.__velocity_buffer.clear()
+
+        if len(self.__pose_buffer) > 0:
+            self.__pose = np.mean(self.__pose_buffer, axis=0)
+            self.__pose_buffer.clear()
+
 
     def get_linear_acceleration(self) -> NDArray[3, np.float32]:
         return np.array(self.__acceleration)
@@ -136,3 +176,9 @@ class PhysicsReal(Physics):
         
     def get_attitude(self) -> NDArray[3, np.float32]:
         return np.array(self.__attitude)
+    
+    def get_velocity(self) -> NDArray[3, np.float32]:
+        return np.array(self.__velocity)
+
+    def get_pose(self) -> NDArray[3, np.float32]:
+        return np.array(self.__pose)
