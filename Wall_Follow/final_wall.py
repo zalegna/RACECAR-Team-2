@@ -24,7 +24,10 @@ from enum import IntEnum
 
 rc = racecar_core.create_racecar()
 
-# Global variables here
+
+
+# Add any global variables here
+
 LEFT_WINDOW = (-45, -15)
 RIGHT_WINDOW = (15, 45)
 FRONT_WINDOW = (-1,1)
