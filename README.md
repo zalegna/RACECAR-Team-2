@@ -4,5 +4,6 @@ Team Members: Annabeth, Angela, Dinesh, Roshik
 
 
 All code versions for each challenge will be found under their respective folders. The final versions for each challenge will be formmated as final_(challenge name).py
+All files pertaining to the IMU Investigation and machine learning challeneges will be found under their folders. There is no final file for these challenges.
 
 Please pronouce cone slalom as "Cone Slah-LOHM" or "Cone Slah-LAWM. 
