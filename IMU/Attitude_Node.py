@@ -102,15 +102,21 @@ class CompFilterNode(Node):
         print(f"Fused Results")
         print(f"Roll (deg): {self.roll * 180/math.pi}")
         print(f"Pitch (deg): {self.pitch * 180/math.pi}")
-        print(f"Yaw (deg): {self.yaw * 180/math.pi}")
+        print(f"Yaw (deg): {self.fix_angle(self.yaw) * 180/math.pi}")
         print("\n")
         
         # TODO: Publish to attitude topic (convert to degrees)
         attitude = Vector3()
         attitude.x = self.roll * 180/math.pi
         attitude.y = self.pitch * 180/math.pi
-        attitude.z = self.yaw * 180/math.pi
+        attitude.z = self.fix_angle(self.yaw) * 180/math.pi
         self.publisher_attitude.publish(attitude)
+
+    def fix_angle(self, angle_rad):
+        if angle_rad < 0:
+            return angle_rad + 2*math.pi
+        else:
+            return angle_rad
     
     # [FUNCTION] Called when magnetometer topic receives an update
     def mag_callback(self, data):
