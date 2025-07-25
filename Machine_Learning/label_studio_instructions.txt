@@ -1,6 +1,7 @@
 Here are some instructions to use this tool to train for object detection in boudning boxes.
 
-1. Assuming that it's already been downloaded, run "DATA_UPLOAD_MAX_NUMBER_FILES=1000 label-studio start" in your terminal. This will allow you to download a ton of images onto label studio when you use it! Change the number if you need.
+1. Assuming that it's already been downloaded, run "DATA_UPLOAD_MAX_NUMBER_FILES=1000 label-studio start" in your terminal. 
+  This will allow you to download a ton of images onto label studio when you use it! Change the number if you need.
 2. Next, in a browser, copy and paste this: "http://127.0.0.1:8080" This will open up Label Studio.
 3. Create an account if you haven't already, and create a project. Set your settings, and create your labels. You can change this later.
 4. Upload all of your training images. You'll have to go into your folders and select all your files at once.
