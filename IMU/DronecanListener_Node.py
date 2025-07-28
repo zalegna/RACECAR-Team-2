@@ -51,7 +51,8 @@ class DronecanListenerNode(Node):
         flow.min_ground_distance = float('nan')
         flow.max_ground_distance = float('nan')
 
-        self.flow_publisher.publish(flow)
+        #self.flow_publisher.publish(flow)
+        self.flow_publisher.publish(flow.pixel_flow) # im pretty sure we only need this (???)
 
 
     def range_callback(self, msg):
