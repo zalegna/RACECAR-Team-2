@@ -3,15 +3,14 @@ MIT BWSI Autonomous RACECAR
 MIT License
 racecar-neo-summer-labs
 
-File Name: velocity_kalman
+File Name: velocity_node3.py
 
 Title: velocity calculation node
 
 Author: Annabeth Pan
 
 Purpose: ROS2 node that takes IMU linear acceleration data and integrates it and fuses it with velocity
-data derived from measuring optical flow in an image from the LIDAR. I might add a Kalman filter after
-this at some point but idk 
+data derived from measuring optical flow in an image from the LIDAR. kalman on accel 
 
 Expected Outcome: Subscribe to the /imu and /mag topics, and publish to the /velocity
 topic with accurate velocity estimations.
@@ -25,6 +24,24 @@ import numpy as np
 import math
 import cv2 as cv
 
+class OneDKalman:
+    def __init__(self, process_var=0.01, sensor_var=1.0):
+        # Q = process noise variance, R = measurement noise variance
+        self.Q = process_var
+        self.R = sensor_var
+        # state estimate and covariance
+        self.x = 0.0
+        self.P = 1.0
+
+    def update(self, z: float) -> float:
+        # 1) compute Kalman gain
+        K = self.P / (self.P + self.R)
+        # 2) update estimate
+        self.x = self.x + K * (z - self.x)
+        # 3) update covariance
+        self.P = (1 - K) * self.P + self.Q
+        return self.x
+    
 class VelocityNode(Node):
     def __init__(self):
         super().__init__('velocity_node')
@@ -37,7 +54,8 @@ class VelocityNode(Node):
 
         self.prev_time = self.get_clock().now().nanoseconds / 10**9 # initialize time checkpoint
 
-        self.alpha = .95
+        self.alpha = .7
+        self.RES_PER_DEGREE = 3
 
         # intialize gyro stuff
         self.roll = 0.0
@@ -58,6 +76,14 @@ class VelocityNode(Node):
         self.x_velocity = 0.0
         self.y_velocity = 0.0
         self.z_velocity = 0.0
+        
+        ### Kalman Filter
+        self.kf_ax = OneDKalman(process_var=3.0, sensor_var=0.01)
+        self.kf_ay = OneDKalman(process_var=3.0, sensor_var=0.02)
+        self.kf_az = OneDKalman(process_var=1.0, sensor_var=0.01)
+
+        self.kf_px = OneDKalman(process_var=3.0, sensor_var=0.01)
+        self.kf_py = OneDKalman(process_var=3.0, sensor_var=0.02)
 
         # lidar stuff
         # params for ShiTomasi corner detection
@@ -83,21 +109,8 @@ class VelocityNode(Node):
             # return angle_rad
         else:
             return angle_rad
-            
-    # [FUNCTION] Called when new IMU data is received, attidude calc completed here as well
-    def imu_callback(self, data):
-        
-        ## THE FIRST BIT IS GETTING ATTITUDE, NECESSARY FOR GRAVITY
-
-        # Grab linear acceleration and gyroscope values from subscribed data points
-        accel = data.linear_acceleration
-        gyro = data.angular_velocity
-
-        # Calculate time delta
-        now = self.get_clock().now().nanoseconds / 10**9 # Current ROS time
-        dt = now - self.prev_time # Time delta
-        self.prev_time = now # refresh checkpoint
     
+    def get_attitude(self, accel, gyro, dt):
         # Derive tilt angles from accelerometer
         accel_roll = np.arctan2(accel.y, np.sqrt(accel.x**2 + accel.z**2)) # theta_x
         accel_pitch = np.arctan2(-accel.x, np.sqrt(accel.y**2 + accel.z**2)) # theta_y - seems correct
@@ -127,29 +140,73 @@ class VelocityNode(Node):
         # self.pitch_fixed = self.angle_fix(self.pitch)
         self.yaw_fixed = self.angle_fix(self.yaw * 180/math.pi) # eliminate negative angles
 
+        # print(f"accelx: {round(accel.x, 2)}")
+        # print(f"accely: {round(accel.y, 2)}")
+        # print(f"accelz: {round(accel.z, 2)}")
+        # print("\n")
+   
+    # [FUNCTION] Called when new IMU data is received, attidude calc completed here as well
+    def imu_callback(self, data):
+        ## THE FIRST BIT IS GETTING ATTITUDE, NECESSARY FOR GRAVITY
+        # Grab linear acceleration and gyroscope values from subscribed data points
+        accel = data.linear_acceleration
+        gyro = data.angular_velocity
+
+        # Calculate time delta
+        now = self.get_clock().now().nanoseconds / 10**9 # Current ROS time
+        dt = now - self.prev_time # Time delta
+        self.prev_time = now # refresh checkpoint
+        
+        self.get_attitude(accel, gyro, dt)
+
         ## START OF VELOCITY EXCLUSIVE PROCESSING ##
         
         # calculate gravity vector based on attitude, then remove it from linear acceleration
-        g = 9.81
-        gravity = np.array([ 
-            g * np.sin(self.pitch),                                    # X
-            -g * np.sin(self.roll),                                    # Y
-            -g * np.cos(self.roll) * np.cos(self.pitch)                # Z
+        g = -9.81
+        gravity = np.array([
+            g * np.sin(self.pitch),
+            -g * np.sin(self.roll),
+            g * np.cos(self.pitch) * np.cos(self.roll)
         ])
-
-        accel_array = np.array([accel.x, accel.y, accel.z]) # acceleration from vector3 to  np array to do operations
+        
+        accel_array = [accel.x, accel.y, accel.z] # acceleration from vector3 to  np array to do operations, also a bias
         no_gravity = accel_array - gravity
 
+        # put accel thru kalman
+        ax_f=self.kf_ax.update(float(no_gravity[0]))
+        ay_f=self.kf_ay.update(float(no_gravity[1]))
+        az_f=self.kf_az.update(float(no_gravity[2]))
+
+        if abs(ax_f) < .05:
+            ay_f = 0
+        if abs(ay_f) < .05:
+            ay_f = 0
+        if abs(az_f) < .05:
+            az_f = 0
+
+        # print(f"accelx: {round(no_gravity[0], 2)}")
+        # print(f"accely: {round(no_gravity[1], 2)}")
+        # print(f"accelz: {round(no_gravity[2], 2)}")
+        # print("\n")
+        # print(f"accelx: {round(ax_f, 2)}")
+        # print(f"accely: {round(ay_f, 2)}")
+        # print(f"accelz: {round(az_f, 2)}")
+        # print("\n")
+        
         # calc new xyz velocity by integrating (trapezoid sum not rectangles i forget the name)
         # the accel_ is there because these are the points calculated using the accelerometer
         # however, these are velocity values
-        accel_velocity_x = self.x_velocity + 0.5 * (no_gravity[0] + self.prev_accel_x) * dt
-        accel_velocity_y = self.y_velocity + 0.5 * (no_gravity[1] + self.prev_accel_y) * dt
-        accel_velocity_z = self.z_velocity + 0.5 * (no_gravity[2] + self.prev_accel_z) * dt
+        # accel_velocity_x = self.x_velocity + 0.5 * (no_gravity[0] + self.prev_accel_x) * dt
+        # accel_velocity_y = self.y_velocity + 0.5 * (no_gravity[1] + self.prev_accel_y) * dt
+        # accel_velocity_z = self.z_velocity + 0.5 * (no_gravity[2] + self.prev_accel_z) * dt
+        accel_velocity_x = self.x_velocity + 0.5 * (ax_f + self.prev_accel_x) * dt
+        accel_velocity_y = self.y_velocity + 0.5 * (ay_f + self.prev_accel_y) * dt
+        accel_velocity_z = self.z_velocity + 0.5 * (az_f + self.prev_accel_z) * dt
 
-        print(f"velocityx: {accel_velocity_x}")
-        print(f"velocityy: {accel_velocity_y}")
-        print(f"velocityz: {accel_velocity_z}")
+        # print(f"velocityx: {round(accel_velocity_x, 2)}")
+        # print(f"velocityy: {round(accel_velocity_y, 2)}")
+        # print(f"velocityz: {round(accel_velocity_z, 2)}")
+        # print("\n")
 
         # lidar optical flow velocity finding method starts hereee
 
@@ -180,7 +237,25 @@ class VelocityNode(Node):
                     displacements = good_new - good_old
                     self.mean_disp = np.mean(displacements, axis=0)
                     if abs(np.sum(self.mean_disp)) > .001:
-                        print(f"Mean optical flow dx, dy: {self.mean_disp.flatten()}")
+                        #print(f"Mean optical flow dx, dy: {self.mean_disp.flatten()}")
+                        scale = .6
+                        lidar_velocity_x = self.mean_disp[1]*scale
+                        lidar_velocity_y = self.mean_disp[0]*scale
+                        print(f"velocityx: {round(lidar_velocity_x, 2)}")
+                        print(f"velocityy: {round(lidar_velocity_y, 2)}")
+                        print("\n")
+
+                        # clamp values to reasonable ones
+                        if lidar_velocity_x > 2.5:
+                            lidar_velocity_x = 2.5
+                        elif lidar_velocity_x < -2.5:
+                            lidar_velocity_x = -2.5
+
+                        if lidar_velocity_y > 2.5:
+                            lidar_velocity_y = 2.5
+                        elif lidar_velocity_y < -2.5:
+                            lidar_velocity_y = -2.5
+                        pass
                         
                     # Update for next round
                     self.prev_lidar_map = lidar_gray
@@ -194,18 +269,31 @@ class VelocityNode(Node):
                 self.prev_lidar_corners = cv.goodFeaturesToTrack(lidar_gray, mask=None, **self.feature_params)
                 self.prev_lidar_map = lidar_gray
 
+            
             # draw the tracks
+            mask = np.zeros_like(lidar_map)  # 3-channel for color drawing
+            frame = lidar_map.copy()
             color = np.random.randint(0, 255, (100, 3))
-            for i, (new, old) in enumerate(zip(good_new, good_old)):
-                a, b = new.ravel()
-                c, d = old.ravel()
-                mask = cv.line(mask, (int(a), int(b)), (int(c), int(d)), color[i].tolist(), 2)
-                frame = cv.circle(frame, (int(a), int(b)), 5, color[i].tolist(), -1)
-            img = cv.add(frame, mask)
+            
+            # for i, (new, old) in enumerate(zip(good_new, good_old)):
+            #     a, b = new.ravel()
+            #     c, d = old.ravel()
+            #     mask = cv.line(mask, (int(a), int(b)), (int(c), int(d)), color[i].tolist(), 2)
+            #     frame = cv.circle(frame, (int(a), int(b)), 5, color[i].tolist(), -1)
+            # img = cv.add(frame, mask)
 
-        ## calculating velocities from optical flow stuff
-        lidar_velocity_x = self.mean_disp
-        lidar_velocity_y = self.mean_disp
+        # calculating velocities from optical flow stuff
+        
+        # comp filter
+        alpha = .7
+        self.x_velocity = lidar_velocity_x*alpha + accel_velocity_x*(1-alpha)
+        self.y_velocity = lidar_velocity_y*alpha + accel_velocity_y*(1-alpha)
+        self.z_velocity = 0 # lol
+
+        # circle of life
+        self.prev_accel_x = self.x_velocity
+        self.prev_accel_y = self.y_velocity
+        self.prev_accel_z = self.z_velocity
 
         if np.sum(self.mean_disp) != 0:
             velocity = Vector3()
@@ -225,11 +313,12 @@ class VelocityNode(Node):
 
     def get_lidar_image(self, scan, yaw_shift):
         # shift scan based on yaw
+        yaw_shift = 0
         angle_offset = int(yaw_shift % 1) # make int
-        shifted_scan = np.concatenate(scan[angle_offset:], scan[:angle_offset])
+        shifted_scan = np.concatenate((scan[angle_offset*self.RES_PER_DEGREE:], scan[:angle_offset*self.RES_PER_DEGREE]))
 
         # Convert polar to Cartesian
-        angles_deg = np.arange(0, 360, .5)
+        angles_deg = np.arange(0, 360, 1/self.RES_PER_DEGREE)
         angles_rad = np.deg2rad(angles_deg)
         distances = np.array(shifted_scan)
 
