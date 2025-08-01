@@ -27,4 +27,4 @@ Please pronouce cone slalom as "Cone Slah-LOHM" or "Cone Slah-LAWM.
 * Code has a state machine with >=5 states
 * Code uses >=2 sensors
 
-!["guh"](https://photos.fife.usercontent.google.com/pw/AP1GczPjH8KsbiIM6JRwfEMzANQG0pfYE6vRGz5TgNh1wIwpXJoXaN0UACMVDA=w407-h299-s-no-gm?authuser=0)
+!["guh"](https://blog.ed.ted.com/wp-content/uploads/2017/12/new_featured_art_monopoly_istock.jpg)
