@@ -6,7 +6,7 @@ File Name: telemetry.py
 
 Title: Telemetry Testing
 
-Author: Angela Zhao
+Author: Angela Zhao and Annabeth Pan
 
 Purpose: Try out lidar visualizations
 
@@ -44,6 +44,7 @@ rc = racecar_core.create_racecar()
 
 #This function accepts a lidar scan list as well as a boolean that tells it whether this function is being used in the sim or IRL
 #It returns an np array, where lidar points are seen as 255 and everything else are 0
+#Original function by Annabeth Pan
 def get_lidar_visualization(scan, sim):
     # shift scan based on yaw
     # yaw_shift = 0
