@@ -3,9 +3,9 @@ MIT BWSI Autonomous RACECAR
 MIT License
 racecar-neo-summer-labs
 
-File Name: velocity_node3.py
+File Name: pose_node.py
 
-Title: velocity calculation node
+Title: pose calculation node
 
 Author: Annabeth Pan
 
