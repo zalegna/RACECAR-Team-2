@@ -10,19 +10,19 @@ All files pertaining to the IMU Investigation and machine learning challeneges w
 Please pronouce cone slalom as "Cone Slah-LOHM" or "Cone Slah-LAWM. 
 
 4A: Integration Challenges
-*Automate the start of the race
-*Dot matrix usage
-*Telemetry (?)
-*Velocity node
-*Object classifier
-*Object detector
-*Safety stop (?)
-*Enemy car (?)
-*Dynamic obstacle
-*New sensor
+* Automate the start of the race
+* Dot matrix usage
+* Telemetry (?)
+* Velocity node
+* Object classifier
+* Object detector
+* Safety stop (?)
+* Enemy car (?)
+* Dynamic obstacle
+* New sensor
 
 4B: Operations
-*Code runs at >=15 FPS
-*Code uses <50% CPU on idle
-*Code has a state machine with >=5 states
-*Code uses >=2 sensors
+* Code runs at >=15 FPS
+* Code uses <50% CPU on idle
+* Code has a state machine with >=5 states
+* Code uses >=2 sensors
