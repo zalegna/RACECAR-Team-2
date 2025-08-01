@@ -26,3 +26,5 @@ Please pronouce cone slalom as "Cone Slah-LOHM" or "Cone Slah-LAWM.
 * Code uses <50% CPU on idle
 * Code has a state machine with >=5 states
 * Code uses >=2 sensors
+
+!["guh"](https://as1.ftcdn.net/jpg/04/20/57/58/1000_F_420575888_DFI44bzH18GfsGnps6dKzYx4IDE0bBze.jpg)
