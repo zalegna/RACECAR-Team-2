@@ -1,7 +1,6 @@
 """
 MIT BWSI Autonomous RACECAR
 MIT License
-racecar-neo-prereq-labs
 
 File Name: telemetry.py
 
@@ -43,15 +42,19 @@ rc = racecar_core.create_racecar()
 # Functions
 ########################################################################################
 
-# 2 for sim, 3 for irl
-RES_PER_DEGREE=2
-
-def get_lidar_image(scan):
+#This function accepts a lidar scan list as well as a boolean that tells it whether this function is being used in the sim or IRL
+#It returns an np array, where lidar points are seen as 255 and everything else are 0
+def get_lidar_visualization(scan, sim):
     # shift scan based on yaw
     # yaw_shift = 0
     # angle_offset = int(round(yaw_shift))
     # shifted_scan = np.concatenate((scan[angle_offset*RES_PER_DEGREE:], scan[:angle_offset*RES_PER_DEGREE]))
     shifted_scan = scan
+
+    if sim:
+        RES_PER_DEGREE=2
+    elif not sim:
+        RES_PER_DEGREE=3
     
     # Convert polar to Cartesian
     angles_deg = np.arange(0, 360, 1/RES_PER_DEGREE)
@@ -93,8 +96,12 @@ def get_lidar_image(scan):
     #img = rc_utils.crop(img, (0, 0), (160, 240))
     #print(img.shape) : (240, 240, 3)
 
+    #Convert the image back to black and white for lidar visualization
     img=cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    return img
+
+    #Use a max pooling algorithm to reduce the quality of the lidar image
+    reduced=skim.block_reduce(img, (15, 15), np.max)
+    return reduced
 
 # [FUNCTION] The start function is run once every time the start button is pressed
 def start():
@@ -136,11 +143,9 @@ def start():
 
 def update():
     scan=rc.lidar.get_samples()
-    imgArray=get_lidar_image(scan)
-    # print(imgArray.shape)
-    reduced=skim.block_reduce(imgArray, (15, 15), np.max)
+    lidar_img=get_lidar_visualization(scan)
 
-    print(reduced)
+    print(lidar_img)
 
     x, _=rc.controller.get_joystick(rc.controller.Joystick.RIGHT)
     _, y=rc.controller.get_joystick(rc.controller.Joystick.LEFT)
