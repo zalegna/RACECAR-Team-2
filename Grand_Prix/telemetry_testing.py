@@ -105,36 +105,7 @@ def get_lidar_visualization(scan, sim):
 
 # [FUNCTION] The start function is run once every time the start button is pressed
 def start():
-    print("                                                                                                  ")
-    print("                                                     ...                                          ")
-    print("                                                   .+=-=-..       ..::..                          ")
-    print("                 .......-.....                     :=    :=:.  .-==-. :=-.                        ")
-    print("                        #.:::.                    :-      .--.-=:       +.                        ")
-    print("                        #                         ::        .-=.        +.                        ")
-    print("                        #                         ::         ..        .=.                        ")
-    print("                        #                         .+.                 :-.                         ")
-    print("                        #                          :-.              .=:.                          ")
-    print("                        #                           .==-:.        :=-.                            ")
-    print("                 .-----=#=========:                   ..:-----:..:-.                              ")
-    print("                                                             .:=+-.                               ")
-    print("                                                             :-::.                                ")
-    print("                                                                                                  ")
-    print("                                            :--. ..                                               ")
-    print("                                      .:====++*++===-.:.                                          ")
-    print("                                  .:===*##%%%##%%%%##*==:                                         ")
-    print("                                .:-=+*#################*==-:                                      ")
-    print("                                :+=*##*+++==+*#+=+#######+=-.                                     ")
-    print("                              ..-=+%%#**###***##*+=+#####*==-.                                    ")
-    print("                              .:+=*%#####+==##+=*##+=+####+==.                                    ")
-    print("                              .:+=+#######*==*%*+=+*==+%%#==-.                                    ")
-    print("                               .===*########+==*%%####%%#+=*=.                                    ")
-    print("                               .+*+=+##################*===+=.                                    ")
-    print("                               .:++===+*#############*==+#*-                                      ")
-    print("                                 .=##+=====++++++======+**=.                                      ")
-    print("                                  .:-+*###+==+**===####+.                                         ")
-    print("                                     .+#**#########=---.                                          ")
-    print("                                       .. .-=-..:-:                                               ")
-    print("                                                                                                  ")
+    pass
 
 
 # [FUNCTION] After start() is run, this function is run once every frame (ideally at
