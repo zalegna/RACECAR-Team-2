@@ -234,13 +234,13 @@ class VelocityNode(Node):
             if current_lidar_corners is not None and st is not None:
                 good_new = current_lidar_corners[st == 1]
                 good_old = self.prev_lidar_corners[st == 1]
-
                 if len(good_new) >= 1:
                     displacements = good_new - good_old
                     self.mean_disp = np.mean(displacements, axis=0)
-                    if abs(np.sum(self.mean_disp)) > .0001:
+                    #print(self.mean_disp)
+                    if abs(np.sum(self.mean_disp)) > 0:
                         #print(f"Mean optical flow dx, dy: {self.mean_disp.flatten()}")
-                        scale = .4
+                        scale = .7
                         lidar_velocity_x = self.mean_disp[1]*scale
                         lidar_velocity_y = self.mean_disp[0]*scale
                         # print(f"lvelocityx: {round(lidar_velocity_x, 2)}")
@@ -259,7 +259,7 @@ class VelocityNode(Node):
                             lidar_velocity_y = max_speed
                         elif lidar_velocity_y < -max_speed:
                             lidar_velocity_y = -max_speed
-                        
+
                         # comp filter
                         alpha = .7
                         self.x_velocity = lidar_velocity_x*alpha + accel_velocity_x*(1-alpha)
@@ -322,13 +322,14 @@ class VelocityNode(Node):
     def lidar_callback(self, data):
         scan_data_orig = np.flip(np.multiply(np.array(data.ranges), 100))
         self.scan_data = np.array([0 if str(x) == "inf" else x for x in scan_data_orig])
+        # print(self.scan_data)
 
     def get_lidar_image(self, scan, yaw_shift):
         # shift scan based on yaw
         yaw_shift = 0
         angle_offset = int(yaw_shift % 1) # make int
         shifted_scan = np.concatenate((scan[angle_offset*self.RES_PER_DEGREE:], scan[:angle_offset*self.RES_PER_DEGREE]))
-
+        
         # Convert polar to Cartesian
         angles_deg = np.arange(0, 360, 1/self.RES_PER_DEGREE)
         angles_rad = np.deg2rad(angles_deg)
