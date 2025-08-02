@@ -399,7 +399,7 @@ def wall_follow():
     error_wall = r_component - l_component
     wall_adjust = rc_utils.clamp(error_wall * kp_wall, -1, 1)
 
-    merged_angle = rc_utils.clamp((chosen_heading / 60.0 + wall_adjust) / 1.5, -1.0, 1.0)
+    merged_angle = rc_utils.clamp((chosen_heading / 70.0 + wall_adjust) / 2, -1.0, 1.0)
     speed = 1.0 if best_opening > 220 else 0.6
 
     #print(chosen_heading, wall_adjust)
@@ -494,7 +494,7 @@ def start():
     global speed, angle, state
     speed = 1
     rc.drive.set_max_speed(.5)
-    state = -1
+    state = 0
 
 def update():
     global speed, angle, image, scan
@@ -513,7 +513,7 @@ def update():
     # print(lidar_img)
     # print(f"Current State: {states[state]}")
 
-    #state = 3
+    #state = 0
     # waiting state
     if state == -1:
         # wait
@@ -536,6 +536,8 @@ def update():
         #print(AR_area)
         if AR_area > 3300:
             last_marker_id = ids[0]
+    
+    state = last_marker_id
         
     # Safety stop
     # if scan[0] != 0 and scan[0] < 20: # if we are is too close (but not reading blanks)
