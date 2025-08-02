@@ -3,9 +3,9 @@ MIT BWSI Autonomous RACECAR
 
 Title: Grand Prix!!!!!!!!
 
-Author: team MONOPOLY (2)
+Author: Team MONOPOLY (2)
 
-Purpose: to win the grand prix lesgoo
+Purpose: Complete the Grand Prix course
 """
 
 ########################################################################################
