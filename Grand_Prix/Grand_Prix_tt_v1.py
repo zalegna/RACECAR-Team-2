@@ -29,6 +29,8 @@ sys.path.insert(1, '../../library')
 import racecar_core
 import racecar_utils as rc_utils
 
+## do more tpu bs here
+
 ########################################################################################
 # Global variables
 ########################################################################################
@@ -348,7 +350,7 @@ def line_follow():
 def fix_angle(deg):
     return deg + 360 if deg < 0 else deg
 
-# NEEDS COMMENTING
+# commenting maybe?
 def wall_follow():
     global speed, angle, scan, kp_wall
 
@@ -397,10 +399,12 @@ def wall_follow():
     error_wall = r_component - l_component
     wall_adjust = rc_utils.clamp(error_wall * kp_wall, -1, 1)
 
-    merged_angle = rc_utils.clamp((chosen_heading / 70.0 + wall_adjust) / 2.0, -1.0, 1.0)
+    merged_angle = rc_utils.clamp((chosen_heading / 60.0 + wall_adjust) / 1.5, -1.0, 1.0)
     speed = 1.0 if best_opening > 220 else 0.6
 
+    #print(chosen_heading, wall_adjust)
     angle = merged_angle
+    print(angle)
     #display_angle = int(merged_angle * 100)
     #rc.display.show_text(f".{display_angle}")
 
@@ -468,6 +472,21 @@ def get_lidar_visualization(scan, sim):
     return reduced
 
 ########################################################################################
+# Elevator
+########################################################################################
+
+def elevator_wait():
+    global speed
+    print(scan[0])
+    if scan[0] > 50 or scan[0] == 0: # if scan > 50; lidar is above
+        speed = 1
+    else:
+        speed = 0
+
+def elevator_align():
+    pass
+    
+########################################################################################
 # start/update/update_slow
 ########################################################################################
 
@@ -487,14 +506,14 @@ def update():
 
     #GET UPDATE FUNCTION FPS
     fps = 1/rc.get_delta_time()
-    print(f"FPS: {fps}")
+    #print(f"FPS: {fps}")
 
     #Print telemetry info
     #lidar_img=get_lidar_visualization(scan, False)
     # print(lidar_img)
     # print(f"Current State: {states[state]}")
 
-    state = 0
+    #state = 3
     # waiting state
     if state == -1:
         # wait
@@ -506,7 +525,7 @@ def update():
     elif state == 2:
         cone_slalom()
     if state == 3:
-        pass
+        elevator_wait()
     
     # --- AR MARKER DETECTION ---
     corners, ids, _ = detector.detectMarkers(image)
@@ -514,13 +533,13 @@ def update():
     if corners:
         current_corners = corners[0][0]
         AR_area = abs((current_corners[2][1] - current_corners[0][1]) * (current_corners[2][0] - current_corners[0][0]))
-        print(AR_area)
+        #print(AR_area)
         if AR_area > 3300:
             last_marker_id = ids[0]
         
     # Safety stop
-    if scan[0] != 0 and scan[0] < 20: # if we are is too close (but not reading blanks)
-        p_brake()
+    # if scan[0] != 0 and scan[0] < 20: # if we are is too close (but not reading blanks)
+    #     p_brake()
 
     # pretty sure this gets run anyway in all of them, but just in case lol. Clamp to avoid out of bounds error
     speed = rc_utils.clamp(speed, -1, 1)
