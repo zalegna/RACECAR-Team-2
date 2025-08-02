@@ -13,9 +13,6 @@ Please pronouce cone slalom as "Cone Slah-LOHM" or "Cone Slah-LAWM.
 * Dot matrix usage
 * Telemetry
 * Velocity node
-* Object classifier
-* Object detector
-* Dynamic obstacle
 
 4B: Operations (all operations challenges are attempted!)
 * Code runs at >=15 FPS
