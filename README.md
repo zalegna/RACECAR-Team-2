@@ -12,7 +12,6 @@ Please pronouce cone slalom as "Cone Slah-LOHM" or "Cone Slah-LAWM.
 4A: Integration Challenges
 * Dot matrix usage
 * Telemetry
-* Velocity node
 
 4B: Operations (all operations challenges are attempted!)
 * Code runs at >=15 FPS
