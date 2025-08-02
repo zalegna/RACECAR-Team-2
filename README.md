@@ -25,3 +25,4 @@ Please pronouce cone slalom as "Cone Slah-LOHM" or "Cone Slah-LAWM.
 * Code uses >=2 sensors
 
 !["muney"](Extra_Things/muney.png)
+!["love muney"](Extra_Things/cc_coin.gif)
