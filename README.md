@@ -10,7 +10,6 @@ All files pertaining to the IMU Investigation and machine learning challeneges w
 Please pronouce cone slalom as "Cone Slah-LOHM" or "Cone Slah-LAWM. 
 
 4A: Integration Challenges
-* Automate the start of the race
 * Dot matrix usage
 * Telemetry
 * Velocity node
