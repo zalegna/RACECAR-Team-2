@@ -12,19 +12,16 @@ Please pronouce cone slalom as "Cone Slah-LOHM" or "Cone Slah-LAWM.
 4A: Integration Challenges
 * Automate the start of the race
 * Dot matrix usage
-* Telemetry (?)
+* Telemetry
 * Velocity node
 * Object classifier
 * Object detector
-* Safety stop (?)
-* Enemy car (?)
 * Dynamic obstacle
-* New sensor
 
-4B: Operations
+4B: Operations (all operations challenges are attempted!)
 * Code runs at >=15 FPS
 * Code uses <50% CPU on idle
 * Code has a state machine with >=5 states
 * Code uses >=2 sensors
 
-!["guh"](https://blog.ed.ted.com/wp-content/uploads/2017/12/new_featured_art_monopoly_istock.jpg)
+!["muney"](https://blog.ed.ted.com/wp-content/uploads/2017/12/new_featured_art_monopoly_istock.jpg)
